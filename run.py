@@ -20,7 +20,7 @@ if project_root not in sys.path:
     sys.path.append(project_root)
 
 # 导入配置和模块
-from config import LINKEDIN_CRAWLER_CONFIG, TEXT_ANALYSIS_CONFIG, VISUALIZATION_CONFIG, GRADIO_APP_CONFIG
+from config import LINKEDIN_CONFIG, TEXT_ANALYSIS_CONFIG, VISUALIZATION_CONFIG, GRADIO_CONFIG
 from src.utils.logger import setup_logger
 from main import run_crawler, run_analysis, run_visualization, run_all
 from app import run_app
@@ -73,17 +73,18 @@ def main():
     # 根据运行模式执行相应功能
     if args.mode == "crawler":
         # 更新爬虫配置
-        crawler_config = LINKEDIN_CRAWLER_CONFIG.copy()
+        crawler_config = LINKEDIN_CONFIG.copy()
         if args.keyword:
-            crawler_config["search_keywords"] = [args.keyword]
+            crawler_config["search"]["keywords"] = [args.keyword]
         if args.location:
-            crawler_config["search_locations"] = [args.location]
+            crawler_config["search"]["locations"] = [args.location]
         if args.pages:
-            crawler_config["max_pages"] = args.pages
+            crawler_config["search"]["pages_per_search"] = args.pages
         if args.headless is not None:
-            crawler_config["headless"] = args.headless
+            crawler_config["crawler"]["headless"] = args.headless
         if args.proxy:
-            crawler_config["proxy"] = args.proxy
+            crawler_config["crawler"]["proxy_list"] = [args.proxy]
+            crawler_config["crawler"]["use_proxy"] = True
         
         # 运行爬虫
         run_crawler(crawler_config)
@@ -92,9 +93,9 @@ def main():
         # 更新分析配置
         analysis_config = TEXT_ANALYSIS_CONFIG.copy()
         if args.llm_weight:
-            analysis_config["llm_weight"] = args.llm_weight
+            analysis_config["hybrid"]["llm_weight"] = args.llm_weight
         if args.top_n:
-            analysis_config["top_n"] = args.top_n
+            analysis_config["hybrid"]["top_n"] = args.top_n
         
         # 运行分析
         input_file = args.input if args.input else None
@@ -103,10 +104,9 @@ def main():
     elif args.mode == "visualization":
         # 更新可视化配置
         vis_config = VISUALIZATION_CONFIG.copy()
-        if args.wordcloud is not None:
-            vis_config["generate_wordcloud"] = args.wordcloud
-        if args.heatmap is not None:
-            vis_config["generate_heatmap"] = args.heatmap
+        # 添加生成标志
+        vis_config["generate_wordcloud"] = not args.no_wordcloud if args.wordcloud is None else args.wordcloud
+        vis_config["generate_heatmap"] = not args.no_heatmap if args.heatmap is None else args.heatmap
         
         # 运行可视化
         input_file = args.input if args.input else None
@@ -114,40 +114,40 @@ def main():
         
     elif args.mode == "all":
         # 更新所有配置
-        crawler_config = LINKEDIN_CRAWLER_CONFIG.copy()
+        crawler_config = LINKEDIN_CONFIG.copy()
         analysis_config = TEXT_ANALYSIS_CONFIG.copy()
         vis_config = VISUALIZATION_CONFIG.copy()
         
         # 爬虫配置
         if args.keyword:
-            crawler_config["search_keywords"] = [args.keyword]
+            crawler_config["search"]["keywords"] = [args.keyword]
         if args.location:
-            crawler_config["search_locations"] = [args.location]
+            crawler_config["search"]["locations"] = [args.location]
         if args.pages:
-            crawler_config["max_pages"] = args.pages
+            crawler_config["search"]["pages_per_search"] = args.pages
         if args.headless is not None:
-            crawler_config["headless"] = args.headless
+            crawler_config["crawler"]["headless"] = args.headless
         if args.proxy:
-            crawler_config["proxy"] = args.proxy
+            crawler_config["crawler"]["proxy_list"] = [args.proxy]
+            crawler_config["crawler"]["use_proxy"] = True
         
         # 分析配置
         if args.llm_weight:
-            analysis_config["llm_weight"] = args.llm_weight
+            analysis_config["hybrid"]["llm_weight"] = args.llm_weight
         if args.top_n:
-            analysis_config["top_n"] = args.top_n
+            analysis_config["hybrid"]["top_n"] = args.top_n
         
         # 可视化配置
-        if args.wordcloud is not None:
-            vis_config["generate_wordcloud"] = args.wordcloud
-        if args.heatmap is not None:
-            vis_config["generate_heatmap"] = args.heatmap
+        # 添加生成标志
+        vis_config["generate_wordcloud"] = not args.no_wordcloud if args.wordcloud is None else args.wordcloud
+        vis_config["generate_heatmap"] = not args.no_heatmap if args.heatmap is None else args.heatmap
         
         # 运行全部
         run_all(crawler_config, analysis_config, vis_config)
         
     elif args.mode == "app":
         # 更新Gradio配置
-        app_config = GRADIO_APP_CONFIG.copy()
+        app_config = GRADIO_CONFIG.copy()
         if args.share is not None:
             app_config["share"] = args.share
         if args.port:
