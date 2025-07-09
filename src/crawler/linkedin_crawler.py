@@ -33,12 +33,15 @@ from selenium_stealth import stealth
 from fake_useragent import UserAgent
 
 # 可选的截图调试
+SCREENSHOT_AVAILABLE = False
 try:
-    from PIL import Image
-    import pyautogui
-    SCREENSHOT_AVAILABLE = True
-except ImportError:
-    SCREENSHOT_AVAILABLE = False
+    # 检查是否在有图形界面的环境中
+    if os.environ.get('DISPLAY') or os.name == 'nt':
+        from PIL import Image
+        import pyautogui
+        SCREENSHOT_AVAILABLE = True
+except (ImportError, KeyError):
+    pass
 
 # 导入反检测模块
 from .anti_detect import setup_anti_detection
