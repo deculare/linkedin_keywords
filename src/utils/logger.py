@@ -23,7 +23,7 @@ project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 if project_root not in sys.path:
     sys.path.append(project_root)
 
-from config import LOG_CONFIG
+from config import LOGGING_CONFIG as LOG_CONFIG
 
 def setup_logger(name: str = None, log_file: str = None, level: int = None) -> logging.Logger:
     """
