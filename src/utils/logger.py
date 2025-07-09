@@ -38,14 +38,15 @@ def setup_logger(name: str = None, log_file: str = None, level: int = None) -> l
         logging.Logger: 配置好的日志记录器
     """
     # 使用配置中的默认值
-    name = name or LOG_CONFIG['logger_name']
-    level = level or getattr(logging, LOG_CONFIG['log_level'])
+    name = name or 'linkedin_keywords'
+    level = level or getattr(logging, LOG_CONFIG['level'])
     
     # 如果未指定日志文件，使用配置中的默认路径
     if log_file is None:
-        log_dir = os.path.join(project_root, LOG_CONFIG['log_dir'])
+        log_file = LOG_CONFIG['file']
+        # 确保日志目录存在
+        log_dir = os.path.dirname(log_file)
         os.makedirs(log_dir, exist_ok=True)
-        log_file = os.path.join(log_dir, LOG_CONFIG['log_file'])
     
     # 创建日志记录器
     logger = logging.getLogger(name)
@@ -62,14 +63,14 @@ def setup_logger(name: str = None, log_file: str = None, level: int = None) -> l
     # 创建文件处理器
     file_handler = RotatingFileHandler(
         log_file,
-        maxBytes=LOG_CONFIG['max_bytes'],
-        backupCount=LOG_CONFIG['backup_count'],
+        maxBytes=10*1024*1024,  # 默认10MB
+        backupCount=5,          # 默认保留5个备份
         encoding='utf-8'
     )
     file_handler.setLevel(level)
     
     # 创建格式化器
-    formatter = logging.Formatter(LOG_CONFIG['log_format'])
+    formatter = logging.Formatter(LOG_CONFIG['format'])
     console_handler.setFormatter(formatter)
     file_handler.setFormatter(formatter)
     
@@ -90,7 +91,7 @@ def get_logger(name: Optional[str] = None) -> logging.Logger:
         logging.Logger: 日志记录器
     """
     if name is None:
-        return logging.getLogger(LOG_CONFIG['logger_name'])
+        return logging.getLogger('linkedin_keywords')
     else:
         return logging.getLogger(name)
 
