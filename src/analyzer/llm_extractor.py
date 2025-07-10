@@ -28,7 +28,26 @@ project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 if project_root not in sys.path:
     sys.path.append(project_root)
 
-from config import GEMINI_CONFIG, JOB_SUMMARY_PROMPT_TEMPLATE, SKILL_EXTRACTION_PROMPT_TEMPLATE
+from config import GEMINI_CONFIG, PROMPT_TEMPLATES
+
+# 从PROMPT_TEMPLATES获取提示词模板
+JOB_SUMMARY_PROMPT_TEMPLATE = PROMPT_TEMPLATES["job_summary"]
+# 如果SKILL_EXTRACTION_PROMPT_TEMPLATE不在配置中，可以定义一个默认值
+SKILL_EXTRACTION_PROMPT_TEMPLATE = PROMPT_TEMPLATES.get("skill_extraction", """
+你是一位专业的职位技能分析专家。请从以下LinkedIn职位描述中提取所需的技术技能和软技能。
+
+职位描述：
+{job_description}
+
+请以JSON数组格式输出技能列表：
+["技能1", "技能2", ...]
+
+注意：
+- 技能列表应该只包含关键词，不要包含描述性文本
+- 每个技能应该是1-3个单词的简短表述
+- 技能应该按照在职位描述中的重要性排序
+- 不要输出任何解释或额外文本，只输出JSON数组
+""")
 
 # 设置日志
 logger = logging.getLogger(__name__)
